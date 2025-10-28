@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Hero : MonoBehaviour
 {
@@ -20,16 +21,22 @@ public class Hero : MonoBehaviour
     private float _shieldLevel = 1;
     [Tooltip("This field holds a reference to the last triggering GameObject")]
     private GameObject lastTriggerGo = null;
+    // Declare a new delegate type WeaponFireDelegate
+    public delegate void WeaponFireDelegate();
+    // Create a WeaponFireDelegate event named fireEvent.
+    public event WeaponFireDelegate fireEvent;
 
     void Awake()
     {
         if (S == null)
         {
             S = this; // Set the singleton only if it's null
-        } else
+        }
+        else
         {
             Debug.LogError("Hero.Awake() - Attempted to assign second Hero.S!");
         }
+        // fireEvent += TempFire;
     }
 
     void Update()
@@ -47,20 +54,25 @@ public class Hero : MonoBehaviour
         // Rotate the ship to make it feel more dynamic
         transform.rotation = Quaternion.Euler(vAxis * pitchMult, hAxis * rollMult, 0);
 
-        // Allow the ship to fire
-        if (Input.GetKeyDown(KeyCode.Space))
+        // Use the fireEvent to fire Weapons when the Spacebar is pressed
+        if (Input.GetAxis("Jump") == 1 && fireEvent != null)
         {
-            TempFire();
+            fireEvent();
         }
     }
 
-    void TempFire()
-    {
-        GameObject projGO = Instantiate<GameObject>(projectilePrefab);
-        projGO.transform.position = transform.position;
-        Rigidbody rigidB = projGO.GetComponent<Rigidbody>();
-        rigidB.velocity = Vector3.up * projectileSpeed;
-    }
+    // void TempFire()
+    // {
+    //     GameObject projGO = Instantiate<GameObject>(projectilePrefab);
+    //     projGO.transform.position = transform.position;
+    //     Rigidbody rigidB = projGO.GetComponent<Rigidbody>();
+    //     rigidB.velocity = Vector3.up * projectileSpeed;
+
+    //     ProjectileHero proj = projGO.GetComponent<ProjectileHero>();
+    //     proj.type = eWeaponType.blaster;
+    //     float tSpeed = Main.GET_WEAPON_DEFINITION(proj.type).velocity;
+    //     rigidB.velocity = Vector3.up * tSpeed;
+    // }
 
     void OnTriggerEnter(Collider other)
     {

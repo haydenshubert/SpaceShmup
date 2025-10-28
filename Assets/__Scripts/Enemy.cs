@@ -12,7 +12,7 @@ public class Enemy : MonoBehaviour
     public float health = 10;   // Camage needed to destroy this enemy
     public int score = 100;     // Points earned for destroying this enenmy
 
-    private BoundsCheck bndCheck;
+    protected BoundsCheck bndCheck;
 
     void Awake()
     {
@@ -52,13 +52,27 @@ public class Enemy : MonoBehaviour
     void OnCollisionEnter(Collision coll)
     {
         GameObject otherGO = coll.gameObject;
-        if (otherGO.GetComponent<ProjectileHero>() != null)
+
+        // Check for collisions with projectilehero
+        ProjectileHero p = otherGO.GetComponent<ProjectileHero>();
+        if (p != null)
         {
-            Destroy(otherGO);   // Destory Projectile
-            Destroy(gameObject);    // Destory this Enemy GameObject
-        }   else
+            // Only damage this Enemy if it's on screen
+            if (bndCheck.isOnScreen)
+            {
+                // Get the damage amoutn from the Main WEAP>DICT
+                health -= Main.GET_WEAPON_DEFINITION(p.type).damageOnHit;
+                if (health <= 0)
+                {
+                    // Destroy this Enemy
+                    Destroy(this.gameObject);
+                }
+            }
+            // Destroy the ProjectileHero regardless
+            Destroy(otherGO);
+        } else
         {
-            Debug.Log("Enemy hit by non-ProjectileHero " + otherGO.name);
+            print("Enemy hit by non-ProjectileHero: " + otherGO.name);
         }
     }
 }
